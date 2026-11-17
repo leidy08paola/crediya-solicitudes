@@ -1,5 +1,6 @@
 package co.com.crediya.model.solicitud;
 
+import co.com.crediya.model.tipoprestamo.TipoPrestamo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,7 +19,6 @@ public class Solicitud {
     private String documentoIdentidad;
     private BigDecimal monto;
     private Integer plazo;
-    private String tipoPrestamo;
-    @Builder.Default
-    private String estadoSolicitud = "Pendiente de revisión";
+    private TipoPrestamo tipoPrestamo;
+    private EstadoSolicitud estado;
 }
