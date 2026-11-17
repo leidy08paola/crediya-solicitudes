@@ -1,14 +1,15 @@
 package co.com.bancolombia.config;
 
-import org.springframework.context.annotation.ComponentScan;
+import co.com.bancolombia.model.solicitud.gateways.SolicitudRepository;
+import co.com.bancolombia.usecase.registrarsolicitud.RegistrarSolicitudUseCase;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.FilterType;
 
 @Configuration
-@ComponentScan(basePackages = "co.com.bancolombia.usecase",
-        includeFilters = {
-                @ComponentScan.Filter(type = FilterType.REGEX, pattern = "^.+UseCase$")
-        },
-        useDefaultFilters = false)
 public class UseCasesConfig {
+
+        @Bean
+        public RegistrarSolicitudUseCase registrarSolicitudUseCase(SolicitudRepository solicitudRepository) {
+                return new RegistrarSolicitudUseCase(solicitudRepository);
+        }
 }
