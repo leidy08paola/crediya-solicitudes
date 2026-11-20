@@ -14,8 +14,7 @@ import org.mockito.ArgumentCaptor;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -39,14 +38,16 @@ class RegistrarSolicitudUseCaseTest {
         when(tipoPrestamoRepository.findByNombre(TIPO)).thenReturn(Optional.of(tipoExistente));
         when(solicitudRepository.save(any(Solicitud.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        useCase.registrar(solicitudDelTipo(TIPO, null));
+        Solicitud resultado = useCase.registrar(solicitudDelTipo(TIPO, null));
 
         ArgumentCaptor<Solicitud> captor = ArgumentCaptor.forClass(Solicitud.class);
         verify(solicitudRepository).save(captor.capture());
         assertEquals(EstadoSolicitud.PENDIENTE_REVISION, captor.getValue().getEstado());
         assertEquals(1L, captor.getValue().getTipoPrestamo().getId());
-    }
+        assertNotNull(resultado);
 
+        assertEquals(EstadoSolicitud.PENDIENTE_REVISION, resultado.getEstado());
+    }
     @Test
     @DisplayName("Ignora un estado distinto de pendiente enviado desde afuera")
     void shouldForcePendingStatusEvenIfRequestComesApproved() {
