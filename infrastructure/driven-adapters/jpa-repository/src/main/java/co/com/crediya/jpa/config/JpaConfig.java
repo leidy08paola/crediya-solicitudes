@@ -16,6 +16,8 @@ import java.util.Properties;
 @Configuration
 public class JpaConfig {
 
+    private static final String ENTITIES_PACKAGE = "co.com.crediya.jpa";
+
     @Bean
     public DBSecret dbSecret(Environment env) {
         return DBSecret.builder()
@@ -41,7 +43,7 @@ public class JpaConfig {
             @Value("${spring.jpa.databasePlatform}") String dialect) {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
-        em.setPackagesToScan("co.com.bancolombia.jpa");
+        em.setPackagesToScan(ENTITIES_PACKAGE);
 
         JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
