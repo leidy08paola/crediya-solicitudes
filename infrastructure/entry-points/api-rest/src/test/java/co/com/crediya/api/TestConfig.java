@@ -11,11 +11,11 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @Configuration
 @EnableAutoConfiguration
 @EnableWebMvc
-@ComponentScan(basePackages = "co.com.bancolombia.api",
+@ComponentScan(basePackages = "co.com.crediya.api",
         excludeFilters = @ComponentScan.Filter(
                 type = FilterType.ASSIGNABLE_TYPE,
                 classes = CorsConfig.class
         ))
-@Import(ApiRest.class)
+@Import(SolicitudController.class)
 public class TestConfig {
 }

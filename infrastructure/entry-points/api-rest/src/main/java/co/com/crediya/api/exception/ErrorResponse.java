@@ -1,4 +1,6 @@
 package co.com.crediya.api.exception;
 
-public class ErrorResponse {
+import java.time.LocalDateTime;
+
+public record ErrorResponse(String code, String message, LocalDateTime timestamp) {
 }
