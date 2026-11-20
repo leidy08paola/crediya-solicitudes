@@ -1,0 +1,21 @@
+services:
+  postgres-solicitudes:
+    image: postgres:16-alpine
+    container_name: crediya-solicitudes-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: crediya_solicitudes
+      POSTGRES_USER: crediya
+      POSTGRES_PASSWORD: crediya123
+    ports:
+      - "5433:5432"
+    volumes:
+      - crediya_solicitudes_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crediya -d crediya_solicitudes"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  crediya_solicitudes_data:
