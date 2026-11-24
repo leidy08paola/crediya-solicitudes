@@ -12,8 +12,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
@@ -86,6 +88,7 @@ public class SolicitudRepositoryAdapter implements SolicitudRepository {
 
     private void enrichWithAuthData(SolicitudEntity entity) {
         Map<String, Object> user = new AuthUsersClient().findByDocumentoIdentidad(entity.getDocumentoIdentidad());
+
         if (user.get("email") != null) {
             entity.setEmail((String) user.get("email"));
         }
@@ -94,6 +97,7 @@ public class SolicitudRepositoryAdapter implements SolicitudRepository {
         }
         if (user.get("salarioBase") != null) {
             entity.setSalarioBase((BigDecimal) user.get("salarioBase"));
+
         }
     }
 }
