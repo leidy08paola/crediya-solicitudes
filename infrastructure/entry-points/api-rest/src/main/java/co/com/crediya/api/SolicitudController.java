@@ -40,14 +40,18 @@ public class SolicitudController {
     private final ListarSolicitudesUseCase listarSolicitudesUseCase;
 
     @GetMapping
-    @Operation(summary = "Listar solicitudes de préstamo", description = "Listado filtrable por estado")
+    @Operation(summary = "Listar solicitudes de préstamo", description = "Listado paginado y filtrable por estado")
     public ResponseEntity<List<SolicitudResponse>> listar(
-            @RequestParam(name = "estado", required = false) EstadoSolicitud estado) {
+            @RequestParam(name = "estado", required = false) EstadoSolicitud estado,
+            @RequestParam(name = "page", required = false, defaultValue = "0") int page,
+            @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
         log.info("Solicitud de listado de solicitudes recibida");
         List<Solicitud> lista = estado != null
                 ? listarSolicitudesUseCase.listarPorEstado(estado)
                 : listarSolicitudesUseCase.listar();
-        return ResponseEntity.ok(lista.stream()
+        int from = (int) Math.min((long) Math.max(page, 0) * Math.max(size, 0), lista.size());
+        int to = (int) Math.min(from + Math.max(size, 0), lista.size());
+        return ResponseEntity.ok(lista.subList(from, to).stream()
                 .map(SolicitudDtoMapper::toResponse)
                 .collect(Collectors.toList()));
     }
