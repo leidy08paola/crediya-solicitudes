@@ -4,7 +4,9 @@ import co.com.crediya.api.dto.CrearSolicitudRequest;
 import co.com.crediya.api.dto.SolicitudResponse;
 import co.com.crediya.api.exception.ErrorResponse;
 import co.com.crediya.api.mapper.SolicitudDtoMapper;
+import co.com.crediya.model.solicitud.EstadoSolicitud;
 import co.com.crediya.model.solicitud.Solicitud;
+import co.com.crediya.usecase.listarsolicitudes.ListarSolicitudesUseCase;
 import co.com.crediya.usecase.registrarsolicitud.RegistrarSolicitudUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,10 +19,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -30,6 +37,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class SolicitudController {
 
     private final RegistrarSolicitudUseCase registrarSolicitudUseCase;
+    private final ListarSolicitudesUseCase listarSolicitudesUseCase;
+
+    @GetMapping
+    @Operation(summary = "Listar solicitudes de préstamo", description = "Listado filtrable por estado")
+    public ResponseEntity<List<SolicitudResponse>> listar(
+            @RequestParam(name = "estado", required = false) EstadoSolicitud estado) {
+        log.info("Solicitud de listado de solicitudes recibida");
+        List<Solicitud> lista = estado != null
+                ? listarSolicitudesUseCase.listarPorEstado(estado)
+                : listarSolicitudesUseCase.listar();
+        return ResponseEntity.ok(lista.stream()
+                .map(SolicitudDtoMapper::toResponse)
+                .collect(Collectors.toList()));
+    }
 
     @PostMapping
     @Operation(summary = "Registrar una solicitud de préstamo")

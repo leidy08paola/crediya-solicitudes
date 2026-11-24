@@ -25,8 +25,13 @@ public final class SolicitudDtoMapper {
                 solicitud.getDocumentoIdentidad(),
                 solicitud.getMonto(),
                 solicitud.getPlazo(),
-                solicitud.getTipoPrestamo().getNombre(),
-                solicitud.getEstado().getEtiqueta()
+                solicitud.getTipoPrestamo() != null ? solicitud.getTipoPrestamo().getNombre() : null,
+                solicitud.getTipoPrestamo() != null ? solicitud.getTipoPrestamo().getTasaInteres() : null,
+                solicitud.getEstado() != null ? solicitud.getEstado().getEtiqueta() : null,
+                null,
+                null,
+                null,
+                null
         );
     }
 }

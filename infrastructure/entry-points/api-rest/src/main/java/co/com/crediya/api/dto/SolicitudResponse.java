@@ -10,6 +10,11 @@ public record SolicitudResponse(
         @JsonProperty("monto") BigDecimal monto,
         @JsonProperty("plazo") Integer plazo,
         @JsonProperty("tipo_prestamo") String tipoPrestamo,
-        @JsonProperty("estado") String estado
+        @JsonProperty("tasa_interes") BigDecimal tasaInteres,
+        @JsonProperty("estado") String estado,
+        @JsonProperty("email") String email,
+        @JsonProperty("nombre") String nombre,
+        @JsonProperty("salario_base") BigDecimal salarioBase,
+        @JsonProperty("deuda_total_mensual_solicitudes_aprobadas") BigDecimal deudaTotalMensualSolicitudesAprobadas
 ) {
 }

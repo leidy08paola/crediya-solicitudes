@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -68,6 +69,42 @@ class SolicitudRepositoryAdapterTest {
         assertEquals(10L, resultado.getId());
         assertEquals("1020304050", resultado.getDocumentoIdentidad());
         verify(solicitudDataRepository).save(any(SolicitudEntity.class));
+    }
+
+    @Test
+    @DisplayName("Lista todas las solicitudes")
+    void shouldListAllSolicitudes() {
+        when(solicitudDataRepository.findAll()).thenReturn(List.of(solicitudEntity()));
+
+        List<Solicitud> resultado = adapter.findAll();
+
+        assertEquals(1, resultado.size());
+        assertEquals("1020304050", resultado.get(0).getDocumentoIdentidad());
+    }
+
+    @Test
+    @DisplayName("Lista las solicitudes de un estado")
+    void shouldListSolicitudesByEstado() {
+        when(solicitudDataRepository.findByEstado(EstadoSolicitud.REVISION_MANUAL))
+                .thenReturn(List.of(solicitudEntity()));
+
+        List<Solicitud> resultado = adapter.findByEstado(EstadoSolicitud.REVISION_MANUAL);
+
+        assertEquals(1, resultado.size());
+    }
+
+    private SolicitudEntity solicitudEntity() {
+        return SolicitudEntity.builder()
+                .id(10L)
+                .documentoIdentidad("1020304050")
+                .monto(new BigDecimal("5000000"))
+                .plazo(24)
+                .tipoPrestamo(TipoPrestamoEntity.builder()
+                        .id(1L)
+                        .nombre("LIBRE_INVERSION")
+                        .build())
+                .estado(EstadoSolicitud.PENDIENTE_REVISION)
+                .build();
     }
 
     @Test
