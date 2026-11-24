@@ -21,4 +21,7 @@ public class Solicitud {
     private Integer plazo;
     private TipoPrestamo tipoPrestamo;
     private EstadoSolicitud estado;
+    private String email;
+    private String nombre;
+    private BigDecimal salarioBase;
 }

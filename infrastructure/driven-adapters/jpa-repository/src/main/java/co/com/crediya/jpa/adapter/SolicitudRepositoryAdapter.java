@@ -35,6 +35,7 @@ public class SolicitudRepositoryAdapter implements SolicitudRepository {
                 .tipoPrestamo(tipoEntity)
                 .estado(solicitud.getEstado())
                 .build();
+        enrichWithAuthData(entity);
 
         SolicitudEntity saved = solicitudDataRepository.save(entity);
 
@@ -77,6 +78,22 @@ public class SolicitudRepositoryAdapter implements SolicitudRepository {
                         .build()
                         : null)
                 .estado(entity.getEstado())
+                .email(entity.getEmail())
+                .nombre(entity.getNombre())
+                .salarioBase(entity.getSalarioBase())
                 .build();
+    }
+
+    private void enrichWithAuthData(SolicitudEntity entity) {
+        Map<String, Object> user = new AuthUsersClient().findByDocumentoIdentidad(entity.getDocumentoIdentidad());
+        if (user.get("email") != null) {
+            entity.setEmail((String) user.get("email"));
+        }
+        if (user.get("nombre") != null) {
+            entity.setNombre((String) user.get("nombre"));
+        }
+        if (user.get("salarioBase") != null) {
+            entity.setSalarioBase((BigDecimal) user.get("salarioBase"));
+        }
     }
 }

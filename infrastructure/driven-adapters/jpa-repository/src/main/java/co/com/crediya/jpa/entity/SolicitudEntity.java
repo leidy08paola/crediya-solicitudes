@@ -49,4 +49,13 @@ public class SolicitudEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private EstadoSolicitud estado;
+
+    @Column(length = 150)
+    private String email;
+
+    @Column(length = 255)
+    private String nombre;
+
+    @Column(precision = 12, scale = 2)
+    private BigDecimal salarioBase;
 }
