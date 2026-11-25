@@ -14,7 +14,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Optional;
 
@@ -55,7 +54,7 @@ public class RestAuthClient implements UsuarioGateway {
             return Optional.of(new UsuarioInfo(
                     json.path("correo_electronico").asText(null),
                     json.path("nombres").asText(null),
-                    json.path("salario_base").asDecimal(null)));
+                    json.path("salario_base").decimalValue()));
         } catch (Exception ex) {
             log.error("Error consultando usuario en AUTENTICACION: {}", ex.getMessage());
             throw new co.com.crediya.restconsumer.UsuarioAuthException(
