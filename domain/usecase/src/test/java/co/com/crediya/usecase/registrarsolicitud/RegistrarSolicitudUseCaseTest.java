@@ -7,6 +7,7 @@ import co.com.crediya.model.solicitud.exception.ErrorCode;
 import co.com.crediya.model.solicitud.gateways.SolicitudRepository;
 import co.com.crediya.model.tipoprestamo.TipoPrestamo;
 import co.com.crediya.model.tipoprestamo.gateways.TipoPrestamoRepository;
+import co.com.crediya.model.usuario.gateways.UsuarioGateway;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -27,8 +28,9 @@ class RegistrarSolicitudUseCaseTest {
 
     private final SolicitudRepository solicitudRepository = mock(SolicitudRepository.class);
     private final TipoPrestamoRepository tipoPrestamoRepository = mock(TipoPrestamoRepository.class);
+    private final UsuarioGateway usuarioGateway = mock(UsuarioGateway.class);
     private final RegistrarSolicitudUseCase useCase =
-            new RegistrarSolicitudUseCase(solicitudRepository, tipoPrestamoRepository);
+            new RegistrarSolicitudUseCase(solicitudRepository, tipoPrestamoRepository, usuarioGateway);
 
     @Test
     @DisplayName("Registra la solicitud como pendiente y con el tipo de préstamo resuelto")
@@ -38,7 +40,7 @@ class RegistrarSolicitudUseCaseTest {
         when(tipoPrestamoRepository.findByNombre(TIPO)).thenReturn(Optional.of(tipoExistente));
         when(solicitudRepository.save(any(Solicitud.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        Solicitud resultado = useCase.registrar(solicitudDelTipo(TIPO, null));
+        Solicitud resultado = useCase.registrar(solicitudDelTipo(TIPO, null), null);
 
         ArgumentCaptor<Solicitud> captor = ArgumentCaptor.forClass(Solicitud.class);
         verify(solicitudRepository).save(captor.capture());
@@ -55,7 +57,7 @@ class RegistrarSolicitudUseCaseTest {
                 .thenReturn(Optional.of(TipoPrestamo.builder().id(1L).nombre(TIPO).build()));
         when(solicitudRepository.save(any(Solicitud.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        useCase.registrar(solicitudDelTipo(TIPO, EstadoSolicitud.APROBADA));
+        useCase.registrar(solicitudDelTipo(TIPO, EstadoSolicitud.APROBADA), null);
 
         ArgumentCaptor<Solicitud> captor = ArgumentCaptor.forClass(Solicitud.class);
         verify(solicitudRepository).save(captor.capture());
@@ -68,7 +70,7 @@ class RegistrarSolicitudUseCaseTest {
         when(tipoPrestamoRepository.findByNombre("INEXISTENTE")).thenReturn(Optional.empty());
 
         BusinessException exception = assertThrows(BusinessException.class,
-                () -> useCase.registrar(solicitudDelTipo("INEXISTENTE", null)));
+                () -> useCase.registrar(solicitudDelTipo("INEXISTENTE", null), null));
 
         assertEquals(ErrorCode.TIPO_PRESTAMO_NO_ENCONTRADO, exception.getErrorCode());
         verifyNoInteractions(solicitudRepository);
@@ -77,7 +79,7 @@ class RegistrarSolicitudUseCaseTest {
     @Test
     @DisplayName("Una solicitud nula es un error de programación")
     void shouldFailWhenRequestIsNull() {
-        assertThrows(NullPointerException.class, () -> useCase.registrar(null));
+        assertThrows(NullPointerException.class, () -> useCase.registrar(null, null));
     }
 
     private Solicitud solicitudDelTipo(String nombreTipo, EstadoSolicitud estado) {

@@ -33,5 +33,9 @@ management:
         enabled: true
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:8081"
+jwt:
+  # TODO HU-7 final: quitar el default y exigir variable de entorno JWT_SECRET
+  secret: "${JWT_SECRET:crediya-super-secret-dev}"
+  auth-url: "${CREDIYA_AUTH_URL:http://localhost:8080}"
 
 

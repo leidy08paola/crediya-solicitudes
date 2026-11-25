@@ -1,6 +1,7 @@
 package co.com.crediya.usecase.listarsolicitudes;
 
 import co.com.crediya.model.solicitud.EstadoSolicitud;
+import co.com.crediya.model.solicitud.PageResult;
 import co.com.crediya.model.solicitud.Solicitud;
 import co.com.crediya.model.solicitud.gateways.SolicitudRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -14,6 +15,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -26,23 +29,25 @@ class ListarSolicitudesUseCaseTest {
     private ListarSolicitudesUseCase useCase;
 
     @Test
-    @DisplayName("Lista todas las solicitudes")
-    void shouldListAllSolicitudes() {
-        when(solicitudRepository.findAll()).thenReturn(List.of(solicitud(EstadoSolicitud.PENDIENTE_REVISION)));
+    @DisplayName("Lista las solicitudes con los estados por defecto")
+    void shouldListSolicitudes() {
+        when(solicitudRepository.findByEstadoIn(anyList(), anyInt(), anyInt()))
+                .thenReturn(new PageResult<>(List.of(solicitud(EstadoSolicitud.PENDIENTE_REVISION)), 0, 10, 1));
 
-        assertEquals(1, useCase.listar().size());
+        PageResult<Solicitud> resultado = useCase.listar(0, 10);
+
+        assertEquals(1, resultado.content().size());
     }
 
     @Test
     @DisplayName("Filtra solicitudes por estado")
     void shouldListSolicitudesByEstado() {
-        when(solicitudRepository.findByEstado(EstadoSolicitud.REVISION_MANUAL))
-                .thenReturn(List.of(solicitud(EstadoSolicitud.REVISION_MANUAL)));
+        when(solicitudRepository.findByEstadoIn(List.of(EstadoSolicitud.REVISION_MANUAL), 0, 10))
+                .thenReturn(new PageResult<>(List.of(solicitud(EstadoSolicitud.REVISION_MANUAL)), 0, 10, 1));
 
-        List<Solicitud> resultado = useCase.listarPorEstado(EstadoSolicitud.REVISION_MANUAL);
+        PageResult<Solicitud> resultado = useCase.listarPorEstado(EstadoSolicitud.REVISION_MANUAL, 0, 10);
 
-        assertEquals(1, resultado.size());
-        assertEquals(EstadoSolicitud.REVISION_MANUAL, resultado.get(0).getEstado());
+        assertEquals(1, resultado.content().size());
     }
 
     private Solicitud solicitud(EstadoSolicitud estado) {

@@ -5,6 +5,7 @@ import co.com.crediya.jpa.entity.TipoPrestamoEntity;
 import co.com.crediya.jpa.repository.SolicitudDataRepository;
 import co.com.crediya.jpa.repository.TipoPrestamoDataRepository;
 import co.com.crediya.model.solicitud.EstadoSolicitud;
+import co.com.crediya.model.solicitud.PageResult;
 import co.com.crediya.model.solicitud.Solicitud;
 import co.com.crediya.model.tipoprestamo.TipoPrestamo;
 import org.junit.jupiter.api.DisplayName;
@@ -13,6 +14,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -21,6 +26,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -72,25 +79,19 @@ class SolicitudRepositoryAdapterTest {
     }
 
     @Test
-    @DisplayName("Lista todas las solicitudes")
-    void shouldListAllSolicitudes() {
-        when(solicitudDataRepository.findAll()).thenReturn(List.of(solicitudEntity()));
+    @DisplayName("Lista las solicitudes paginada por estados")
+    void shouldFindByEstadoIn() {
+        Page<SolicitudEntity> pagina = new PageImpl<>(List.of(solicitudEntity()), PageRequest.of(0, 10), 1);
+        when(solicitudDataRepository.findByEstadoIn(anyList(), any(Pageable.class))).thenReturn(pagina);
+        when(solicitudDataRepository.findByEstado(EstadoSolicitud.APROBADA)).thenReturn(List.of());
 
-        List<Solicitud> resultado = adapter.findAll();
+        PageResult<Solicitud> resultado = adapter.findByEstadoIn(List.of(EstadoSolicitud.PENDIENTE_REVISION), 0, 10);
 
-        assertEquals(1, resultado.size());
-        assertEquals("1020304050", resultado.get(0).getDocumentoIdentidad());
-    }
-
-    @Test
-    @DisplayName("Lista las solicitudes de un estado")
-    void shouldListSolicitudesByEstado() {
-        when(solicitudDataRepository.findByEstado(EstadoSolicitud.REVISION_MANUAL))
-                .thenReturn(List.of(solicitudEntity()));
-
-        List<Solicitud> resultado = adapter.findByEstado(EstadoSolicitud.REVISION_MANUAL);
-
-        assertEquals(1, resultado.size());
+        assertEquals(1, resultado.content().size());
+        assertEquals("1020304050", resultado.content().get(0).getDocumentoIdentidad());
+        assertEquals(0, resultado.page());
+        assertEquals(10, resultado.size());
+        assertEquals(1L, resultado.totalElements());
     }
 
     private SolicitudEntity solicitudEntity() {

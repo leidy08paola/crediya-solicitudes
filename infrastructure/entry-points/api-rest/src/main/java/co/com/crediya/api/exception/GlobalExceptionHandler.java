@@ -1,5 +1,6 @@
 package co.com.crediya.api.exception;
 
+import co.com.crediya.api.security.AuthException;
 import co.com.crediya.model.solicitud.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,12 @@ public class GlobalExceptionHandler {
     private static final String REQUEST_ERROR_MESSAGE = "La solicitud no pudo ser procesada";
     private static final String INTERNAL_ERROR_CODE = "INTERNAL_ERROR";
     private static final String INTERNAL_ERROR_MESSAGE = "Ocurrió un error inesperado. Intenta nuevamente más tarde";
+
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<ErrorResponse> handleAuth(AuthException ex) {
+        log.warn("Error de autenticación: {}", ex.getMessage());
+        return build(ex.getStatus(), "AUTHENTICATION_ERROR", ex.getMessage());
+    }
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusiness(BusinessException ex) {

@@ -24,4 +24,5 @@ public class Solicitud {
     private String email;
     private String nombre;
     private BigDecimal salarioBase;
+    private BigDecimal deudaTotalMensualSolicitudesAprobadas;
 }

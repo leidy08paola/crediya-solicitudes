@@ -4,16 +4,21 @@ import co.com.crediya.jpa.entity.SolicitudEntity;
 import co.com.crediya.jpa.entity.TipoPrestamoEntity;
 import co.com.crediya.jpa.repository.SolicitudDataRepository;
 import co.com.crediya.jpa.repository.TipoPrestamoDataRepository;
+import co.com.crediya.model.solicitud.CuotaCalculator;
 import co.com.crediya.model.solicitud.EstadoSolicitud;
+import co.com.crediya.model.solicitud.PageResult;
 import co.com.crediya.model.solicitud.Solicitud;
 import co.com.crediya.model.solicitud.gateways.SolicitudRepository;
 import co.com.crediya.model.tipoprestamo.TipoPrestamo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,8 +41,10 @@ public class SolicitudRepositoryAdapter implements SolicitudRepository {
                 .plazo(solicitud.getPlazo())
                 .tipoPrestamo(tipoEntity)
                 .estado(solicitud.getEstado())
+                .email(solicitud.getEmail())
+                .nombre(solicitud.getNombre())
+                .salarioBase(solicitud.getSalarioBase())
                 .build();
-        enrichWithAuthData(entity);
 
         SolicitudEntity saved = solicitudDataRepository.save(entity);
 
@@ -48,22 +55,36 @@ public class SolicitudRepositoryAdapter implements SolicitudRepository {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Solicitud> findAll() {
-        return toDomainList(solicitudDataRepository.findAll());
-    }
+    public PageResult<Solicitud> findByEstadoIn(List<EstadoSolicitud> estados, int page, int size) {
+        Page<SolicitudEntity> pageResult =
+                solicitudDataRepository.findByEstadoIn(estados, PageRequest.of(page, size));
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<Solicitud> findByEstado(EstadoSolicitud estado) {
-        return toDomainList(solicitudDataRepository.findByEstado(estado));
-    }
-
-    private List<Solicitud> toDomainList(Iterable<SolicitudEntity> entities) {
-        List<Solicitud> lista = new ArrayList<>();
-        for (SolicitudEntity entity : entities) {
-            lista.add(toDomain(entity));
+        List<Solicitud> contenido = new ArrayList<>();
+        for (SolicitudEntity entity : pageResult.getContent()) {
+            contenido.add(toDomain(entity));
         }
-        return lista;
+        Map<String, BigDecimal> deudasPorDocumento = calcularDeudasAprobadasPorDocumento();
+
+        for (Solicitud solicitud : contenido) {
+            if (solicitud.getDocumentoIdentidad() != null) {
+                BigDecimal deuda = deudasPorDocumento.getOrDefault(solicitud.getDocumentoIdentidad(), BigDecimal.ZERO);
+                solicitud.setDeudaTotalMensualSolicitudesAprobadas(deuda);
+            }
+        }
+        return new PageResult<>(contenido, pageResult.getNumber(), pageResult.getSize(), pageResult.getTotalElements());
+    }
+
+    private Map<String, BigDecimal> calcularDeudasAprobadasPorDocumento() {
+        Map<String, BigDecimal> deudas = new HashMap<>();
+        for (SolicitudEntity entity : solicitudDataRepository.findByEstado(EstadoSolicitud.APROBADA)) {
+            if (entity.getDocumentoIdentidad() == null || entity.getTipoPrestamo() == null) {
+                continue;
+            }
+            BigDecimal cuota = CuotaCalculator.calcularCuota(
+                    entity.getMonto(), entity.getTipoPrestamo().getTasaInteres(), entity.getPlazo());
+            deudas.merge(entity.getDocumentoIdentidad(), cuota, BigDecimal::add);
+        }
+        return deudas;
     }
 
     private static Solicitud toDomain(SolicitudEntity entity) {
@@ -83,21 +104,7 @@ public class SolicitudRepositoryAdapter implements SolicitudRepository {
                 .email(entity.getEmail())
                 .nombre(entity.getNombre())
                 .salarioBase(entity.getSalarioBase())
+                .deudaTotalMensualSolicitudesAprobadas(BigDecimal.ZERO)
                 .build();
-    }
-
-    private void enrichWithAuthData(SolicitudEntity entity) {
-        Map<String, Object> user = new AuthUsersClient().findByDocumentoIdentidad(entity.getDocumentoIdentidad());
-
-        if (user.get("email") != null) {
-            entity.setEmail((String) user.get("email"));
-        }
-        if (user.get("nombre") != null) {
-            entity.setNombre((String) user.get("nombre"));
-        }
-        if (user.get("salarioBase") != null) {
-            entity.setSalarioBase((BigDecimal) user.get("salarioBase"));
-
-        }
     }
 }

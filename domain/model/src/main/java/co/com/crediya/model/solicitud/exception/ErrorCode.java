@@ -5,7 +5,10 @@ import lombok.Getter;
 @Getter
 public enum ErrorCode {
 
-    TIPO_PRESTAMO_NO_ENCONTRADO("El tipo de préstamo indicado no existe");
+    TIPO_PRESTAMO_NO_ENCONTRADO("El tipo de préstamo indicado no existe"),
+    REQUIRED_FIELD_EMPTY("El campo %s es obligatorio"),
+    AMOUNT_TOO_LOW("El campo monto debe ser mayor que cero"),
+    PLAZO_INVALID("El campo plazo debe ser mayor que cero");
 
     private final String message;
 

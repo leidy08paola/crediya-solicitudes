@@ -12,6 +12,7 @@ public record SolicitudResponse(
         @JsonProperty("tipo_prestamo") String tipoPrestamo,
         @JsonProperty("tasa_interes") BigDecimal tasaInteres,
         @JsonProperty("estado") String estado,
+        @JsonProperty("estado_solicitud") String estadoSolicitud,
         @JsonProperty("email") String email,
         @JsonProperty("nombre") String nombre,
         @JsonProperty("salario_base") BigDecimal salarioBase,
